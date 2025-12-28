@@ -1,7 +1,22 @@
+[workspace]
+members = [
+    "scopes-macros",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
 [package]
 name = "scopes-rs"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
+[features]
+hierarchy = []
+
 [dependencies]
+scopes-macros = { path = "./scopes-macros" }
