@@ -6,10 +6,13 @@ use darling::{FromDeriveInput, FromVariant, ast};
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use syn::Ident;
+
+use crate::scope::Scope;
 
 #[cfg(feature = "hierarchy")]
 mod hierarchy;
+
+mod scope;
 
 // Options for the enum to be derived
 #[derive(FromDeriveInput)]
@@ -67,41 +70,24 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
     };
 
     // Parse scope names
-    let mut scopes: HashMap<String, Ident> = HashMap::with_capacity(variants.len());
+    let mut scopes: HashMap<String, Scope> = HashMap::with_capacity(variants.len());
     let mut error: Option<syn::Error> = None;
 
     for variant in variants {
         
-        let scope_name: String;
+        let scope = Scope::from_variant(variant, &opts);
+        let scope_full_name = scope.full_name();
 
-        // Rename the variant if necessary
-        if let Some(name) = &variant.rename {
-            scope_name = opts.prefix.clone() + name
-
-        } else {
-
-            // Parse the name from the identifier
-            // Split the name at each capitalized letter and insert the separator
-            let mut name = opts.prefix.clone();
-            for (i, ch) in variant.ident.to_string().char_indices() {
-                if i > 0 && ch.is_uppercase() {
-                    name.push_str(&opts.separator);
-                }
-                name.push(ch.to_ascii_lowercase());
-            }
-            scope_name = name
-        }
-        
         // Raise error for scopes with conflicting names
-        if let Some(other_variant) = scopes.get(&scope_name) {
+        if let Some(other_scope) = scopes.get(&scope_full_name) {
             let mut err = syn::Error::new(
                 variant.ident.span(), 
-                format!("Conflicting scope name '{}' (conflicting with variant {}::{})", scope_name, enum_ident, other_variant)
+                format!("Conflicting scope name '{}' (conflicting with variant {}::{})", scope.name(), enum_ident, &other_scope.ident)
             );
 
             err.combine(syn::Error::new(
-                other_variant.span(), 
-                format!("Conflicting scope name '{}' (conflicting with variant {}::{})", scope_name, enum_ident, variant.ident)
+                other_scope.ident.span(), 
+                format!("Conflicting scope name '{}' (conflicting with variant {}::{})", other_scope.name(), enum_ident, variant.ident)
             ));
 
             if let Some(error) = error.as_mut() {
@@ -111,7 +97,7 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
             }
 
         } else {
-            scopes.insert(scope_name, variant.ident.clone());
+            scopes.insert(scope_full_name, scope);
         }
 
     }
@@ -121,7 +107,11 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
     }
 
     // Implement parsing from a string
-    let (scopes_names, scopes_ident): (Vec<_>, Vec<_>)  = scopes.clone().into_iter().unzip();
+
+    let (scopes_full_names, scopes_ident): (Vec<_>, Vec<_>) = scopes
+        .iter()
+        .map(|(k, v)| (k, &v.ident))
+        .unzip();
 
     let fromstr_impl = quote! {
         impl ::std::str::FromStr for #enum_ident {
@@ -129,7 +119,7 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
 
             fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
                 match s {
-                    #(#scopes_names => Ok(#enum_ident::#scopes_ident),)*
+                    #(#scopes_full_names => Ok(#enum_ident::#scopes_ident),)*
                     _ => Err(()),
                 }
             }

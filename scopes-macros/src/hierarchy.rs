@@ -4,9 +4,11 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
+use crate::Scope;
+
 // TODO: Replace naïve implementation with better one
 // Implement the Hierarchized trait
-pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Ident>) -> TokenStream {
+pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Scope>) -> TokenStream {
     
     // Ideally, we could construct a tree for better flexibility, but for the first poc
     // using String::starts_with is sufficient
@@ -16,15 +18,15 @@ pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Ident
     let mut scope_idents: Vec<Ident> = Vec::new();
     let mut match_patterns: Vec<TokenStream> = Vec::new();
 
-    for (name, ident) in scopes {
+    for (name, scope) in scopes {
         
-        let matched_variants: Vec<Ident> = scopes.iter().filter_map(|(other_name, other_ident)| {
+        let matched_variants: Vec<Ident> = scopes.iter().filter_map(|(other_name, other_scope)| {
 
             // FIXME: This matches other scopes for which name is a prefix of the first label
             // For example, the "test" scope will match "test.read" and "testing", but should
             // only match "test" and "test.read"
             if other_name != name && other_name.starts_with(name) {
-                Some(other_ident.clone())
+                Some(other_scope.ident.clone())
             } else {
                 None
             }
@@ -41,7 +43,7 @@ pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Ident
             #(#enum_ident::#matched_variants)|*
         };
 
-        scope_idents.push(ident.clone());
+        scope_idents.push(scope.ident.clone());
         match_patterns.push(match_pattern);
     }
 
