@@ -4,6 +4,7 @@ use crate::{ScopeOpts, ScopeVariantOpts};
 
 // TODO: Implementation without cloning separator and prefix if feasible
 #[derive(PartialEq)]
+#[cfg_attr(test,derive(Debug))]
 pub struct Scope {
 
     // Ident of the corresponding enum variant
@@ -105,25 +106,153 @@ impl Scope {
 }
 
 #[cfg(test)]
-impl Scope {
+mod tests {
 
-    #[cfg(feature = "hierarchy")]
-    pub fn _test_new(ident: syn::Ident, labels: impl Iterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
-        Self {
-            ident,
-            labels: labels.map(|s| String::from(s.as_ref())).collect(),
-            separator: separator.as_ref().to_owned(),
-            prefix: prefix.as_ref().to_owned(),
+    use std::vec;
+
+    use darling::ast;
+    use proc_macro2::Span;
+
+    use crate::{Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
+
+    // Implement utility functions to create new scopes in tests
+    impl Scope {
+        #[cfg(feature = "hierarchy")]
+        pub fn _test_new(ident: syn::Ident, labels: impl Iterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+            Self {
+                ident,
+                labels: labels.map(|s| String::from(s.as_ref())).collect(),
+                separator: separator.as_ref().to_owned(),
+                prefix: prefix.as_ref().to_owned(),
+            }
+        }
+
+        #[cfg(not(feature = "hierarchy"))]
+        pub fn _test_new(ident: syn::Ident, name: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+            Self {
+                ident,
+                prefix: prefix.as_ref().to_owned(),
+                scope_name: name.as_ref().to_owned(),
+            }
+        }
+
+        // Create a scope struct corresponding to the enabled features
+        #[allow(unused_variables)]
+        pub fn _test_new_full(ident: syn::Ident, name: impl AsRef<str>, labels: impl IntoIterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+            Self {
+                ident,
+                prefix: prefix.as_ref().to_owned(),
+
+                #[cfg(not(feature = "hierarchy"))]
+                scope_name: name.as_ref().to_owned(),
+
+                #[cfg(feature = "hierarchy")]
+                labels: labels.into_iter().map(|s| String::from(s.as_ref())).collect(),
+                #[cfg(feature = "hierarchy")]
+                separator: separator.as_ref().to_owned(),
+            }
         }
     }
 
-    #[cfg(not(feature = "hierarchy"))]
-    pub fn _test_new(ident: syn::Ident, name: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
-        Self {
-            ident,
-            prefix: prefix.as_ref().to_owned(),
-            scope_name: name.as_ref().to_owned(),
+    // Create an identifier
+    macro_rules! ident {
+        ($s: ident) => {
+            syn::Ident::new(stringify!($s), Span::call_site())
+        };
+    }
+
+    fn default_opts() -> ScopeOpts {
+        ScopeOpts {
+            ident: ident!(ScopeEnum),
+            separator: ".".to_string(),
+            prefix: "".to_string(),
+
+            #[cfg(feature = "hierarchy")]
+            hierarchy: false,
+
+            data: ast::Data::Enum(Vec::new()),
         }
     }
 
+    #[test]
+    fn test_get_labels_simple() {
+        assert_eq!(vec!["foo"], get_labels_from_ident(&ident!(Foo)));
+        assert_eq!(vec!["foo", "bar"], get_labels_from_ident(&ident!(FooBar)));
+        assert_eq!(vec!["foo"], get_labels_from_ident(&ident!(foo)));
+        assert_eq!(vec!["foo_bar"], get_labels_from_ident(&ident!(foo_bar)));
+    }
+
+    #[test]
+    fn test_get_labels_consecutive_uppercase() {
+        assert_eq!(vec!["h", "e", "l", "l", "o"], get_labels_from_ident(&ident!(HELLO)));
+    }
+
+    #[test]
+    fn test_from_variant() {
+
+        let opts = default_opts();
+        
+        let variant_opts = ScopeVariantOpts {
+            ident: ident!(Foo),
+            rename: None,
+        };
+        assert_eq!(
+            Scope::from_variant(&variant_opts, &opts),
+            Scope::_test_new_full(ident!(Foo), "foo", get_labels_from_ident(&ident!(Foo)).iter(), &opts.separator, &opts.prefix)
+        );
+
+
+        let variant_opts = ScopeVariantOpts {
+            ident: ident!(FooBar),
+            rename: None,
+        };
+        assert_eq!(
+            Scope::from_variant(&variant_opts, &opts),
+            Scope::_test_new_full(ident!(FooBar), "foo.bar", get_labels_from_ident(&ident!(FooBar)).iter(), &opts.separator, &opts.prefix)
+        );
+    }
+
+    #[test]
+    fn test_from_variant_rename() {
+        let opts = default_opts();
+        
+        let variant_opts = ScopeVariantOpts {
+            ident: ident!(FooBar),
+            rename: Some("baz".to_string()),
+        };
+        assert_eq!(
+            Scope::from_variant(&variant_opts, &opts),
+            Scope::_test_new_full(ident!(FooBar), "baz", vec!["baz"], &opts.separator, &opts.prefix)
+        );
+
+        let variant_opts = ScopeVariantOpts {
+            ident: ident!(FooBar),
+            rename: Some("baz.bar".to_string()),
+        };
+        assert_eq!(
+            Scope::from_variant(&variant_opts, &opts),
+            Scope::_test_new_full(ident!(FooBar), "baz.bar", vec!["baz", "bar"], &opts.separator, &opts.prefix)
+        );
+    }
+
+    #[test]
+    fn test_name() {
+        let mut opts = default_opts();
+        opts.prefix = "myprefix/".to_string();
+
+        let foo = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: None}, &opts);
+        let foo_bar_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(FooBarBaz), rename: None}, &opts);
+        let renamed = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed".to_string())}, &opts);
+        let renamed_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed.baz".to_string())}, &opts);
+
+        assert_eq!("foo", foo.name());
+        assert_eq!("foo.bar.baz", foo_bar_baz.name());
+        assert_eq!("renamed", renamed.name());
+        assert_eq!("renamed.baz", renamed_baz.name());
+
+        assert_eq!("myprefix/foo", foo.full_name());
+        assert_eq!("myprefix/foo.bar.baz", foo_bar_baz.full_name());
+        assert_eq!("myprefix/renamed", renamed.full_name());
+        assert_eq!("myprefix/renamed.baz", renamed_baz.full_name());
+    }
 }
