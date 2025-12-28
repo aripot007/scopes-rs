@@ -31,7 +31,7 @@ impl<S: Scope> Policy<S> {
             Policy::Scope(required) => scopes.contains(required),
 
             #[cfg(feature = "hierarchy")]
-            Policy::Scope(required) => scopes.iter().any(|s| s >= required),
+            Policy::Scope(required) => scopes.iter().any(|s| s.includes(required)),
 
             Policy::Not(policy) => !policy.verify(scopes),
             Policy::OneOf(policies) => policies.iter().any(|p| p.verify(scopes)),
@@ -108,5 +108,19 @@ impl<S: Scope> Not for Policy<S> {
 impl<S: Scope> From<S> for Policy<S> {
     fn from(value: S) -> Self {
         Policy::Scope(value)
+    }
+}
+
+pub trait IntoPolicy<S: Scope> {
+    fn into_policy(self) -> Policy<S>;
+}
+
+impl<S, I> IntoPolicy<S> for I
+where 
+    S: Scope,
+    I: Into<Policy<S>>,
+{
+    fn into_policy(self) -> Policy<S> {
+        self.into()
     }
 }
