@@ -103,3 +103,27 @@ impl Scope {
     }
 
 }
+
+#[cfg(test)]
+impl Scope {
+
+    #[cfg(feature = "hierarchy")]
+    pub fn _test_new(ident: syn::Ident, labels: impl Iterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+        Self {
+            ident,
+            labels: labels.map(|s| String::from(s.as_ref())).collect(),
+            separator: separator.as_ref().to_owned(),
+            prefix: prefix.as_ref().to_owned(),
+        }
+    }
+
+    #[cfg(not(feature = "hierarchy"))]
+    pub fn _test_new(ident: syn::Ident, name: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+        Self {
+            ident,
+            prefix: prefix.as_ref().to_owned(),
+            scope_name: name.as_ref().to_owned(),
+        }
+    }
+
+}

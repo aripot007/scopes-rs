@@ -68,3 +68,71 @@ pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Scope
 
     }.into()
 }
+
+#[cfg(test)]
+mod tests {
+    use proc_macro2::Span;
+
+    use crate::{Scope, hierarchy::is_included};
+
+    // Create a new scope with the given identifier name and labels.
+    // The separator is "." and the prefix is empty.
+    fn new_scope(ident_name: &str, labels: &[&str]) -> Scope {
+        Scope::_test_new(
+            syn::Ident::new(ident_name, Span::call_site()),
+            labels.into_iter(),
+            ".",
+            "",
+        )
+    }
+
+    #[test]
+    fn test_self_inclusion() {
+        let scope_single_label = new_scope("ScopeA", &["scope"]);
+        let scope_multiple_labels = new_scope("ScopeB", &["scope", "foo", "bar"]);
+
+        assert!(is_included(&scope_single_label, &scope_single_label));
+        assert!(is_included(&scope_multiple_labels, &scope_multiple_labels));
+    }
+
+    #[test]
+    fn test_inclusion_simple() {
+        let scope_foo = new_scope("Foo", &["foo"]);
+        let scope_foo_bar = new_scope("Foobar", &["foo", "bar"]);
+
+        assert!(is_included(&scope_foo_bar, &scope_foo));
+        assert!(!is_included(&scope_foo, &scope_foo_bar));
+    }
+
+    #[test]
+    fn test_inclusion_transitive() {
+        let scope_foo = new_scope("Foo", &["foo"]);
+        let scope_foo_bar = new_scope("FooBar", &["foo", "bar"]);
+        let scope_foo_bar_baz = new_scope("FooBarBaz", &["foo", "bar", "baz"]);
+
+        assert!(is_included(&scope_foo_bar, &scope_foo));
+        assert!(is_included(&scope_foo_bar_baz, &scope_foo_bar));
+        assert!(is_included(&scope_foo_bar_baz, &scope_foo))
+    }
+
+    #[test]
+    fn test_non_inclusion_label_prefix() {
+        let scope_foo = new_scope("Foo", &["foo"]);
+        let scope_foobar = new_scope("Foobar", &["foobar"]);
+
+        assert!(!is_included(&scope_foobar, &scope_foo))
+    }
+
+    #[test]
+    fn test_non_inclusion() {
+        let scope_foo_bar = new_scope("Foo", &["foo", "bar"]);
+        let scope_bar = new_scope("Bar", &["bar"]);
+        let scope_foo_bar_baz = new_scope("FooBarBaz", &["foo", "bar", "baz"]);
+        let scope_foo_baz_baz = new_scope("FooBazBaz", &["foo", "baz", "baz"]);
+
+        assert!(is_included(&scope_foo_bar_baz, &scope_foo_bar));
+        assert!(!is_included(&scope_foo_baz_baz, &scope_foo_bar));
+        assert!(!is_included(&scope_foo_bar, &scope_bar));
+        assert!(!is_included(&scope_bar, &scope_foo_bar));
+    }
+}
