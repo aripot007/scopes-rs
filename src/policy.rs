@@ -24,7 +24,7 @@ pub enum Policy<S: Scope> {
 impl<S: Scope> Policy<S> {
 
     /// Check if a set of scopes is authorized by a policy
-    pub fn verify(&self, scopes: &[S]) -> bool {
+    pub fn verify(&self, scopes: &[&S]) -> bool {
         match self {
             
             #[cfg(not(feature = "hierarchy"))]
