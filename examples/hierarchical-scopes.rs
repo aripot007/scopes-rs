@@ -1,8 +1,10 @@
-use std::str::FromStr;
+use scopes_macros::Scope;
+use scopes_rs::policy::{IntoPolicy, Policy};
 
-use scopes_rs::{hierarchy::Hierarchized, policy::{IntoPolicy, Policy}, scope::Scope};
+#[cfg(not(feature = "hierarchy"))]
+compile_error!("This example requires the `hierarchy` feature");
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Scope)]
 enum Scopes {
     User,
     UserSettings,
@@ -11,39 +13,19 @@ enum Scopes {
 }
 
 pub fn main() {
+
+    let scope_user = str::parse::<Scopes>("user").unwrap();
+    let scope_user_profile = str::parse::<Scopes>("user.profile").unwrap();
+    let scope_user_settings = str::parse::<Scopes>("user.settings").unwrap();
+
     let policy: Policy<Scopes> = Scopes::UserProfile.into_policy() & Scopes::UserSettings;
 
-    println!("{}", policy.verify(&[Scopes::UserProfile]));
-    println!("{}", policy.verify(&[Scopes::UserProfile, Scopes::UserSettings, Scopes::UserProfileRead]));
-    println!("{}", policy.verify(&[Scopes::User]));
+    println!("{}", policy.verify(&[&scope_user_profile]));
+    println!("{}", policy.verify(&[&scope_user_settings, &scope_user_profile]));
+    println!("{}", policy.verify(&[&scope_user]));
 
     let policy: Policy<Scopes> = Scopes::UserProfileRead.into();
 
-    println!("{}", policy.verify(&[Scopes::UserProfile, Scopes::UserSettings]));
-    println!("{}", policy.verify(&[Scopes::User]));
-
+    println!("{}", policy.verify(&[&Scopes::UserProfile, &Scopes::UserSettings]));
+    println!("{}", policy.verify(&[&scope_user]));
 }
-
-impl Hierarchized for Scopes {
-    fn includes(&self, other: &Self) -> bool {
-        if self == other {
-            return true;
-        }
-
-        match (self, other) {
-            (Scopes::User, _) => true,
-            (Scopes::UserProfile, Scopes::UserProfileRead) => true,
-            (_, _) => false
-        }
-    }
-}
-
-impl FromStr for Scopes {
-    type Err = ();
-
-    fn from_str(_s: &str) -> Result<Self, Self::Err> {
-        unimplemented!()
-    }
-}
-
-impl Scope for Scopes {}

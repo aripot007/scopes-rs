@@ -16,7 +16,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [features]
-hierarchy = []
+hierarchy = ["scopes-macros/hierarchy"]
 
 [dependencies]
 scopes-macros = { path = "./scopes-macros" }
