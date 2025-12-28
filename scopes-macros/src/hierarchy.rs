@@ -6,26 +6,28 @@ use syn::Ident;
 
 use crate::Scope;
 
-// TODO: Replace naïve implementation with better one
+// Check if scope_1 is included in scope_2
+// A scope includes another one if its label list is a prefix of the other's label list
+fn is_included(scope_1: &Scope, scope_2: &Scope) -> bool {
+    scope_1.labels.starts_with(&scope_2.labels)
+}
+
 // Implement the Hierarchized trait
 pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Scope>) -> TokenStream {
     
     // Ideally, we could construct a tree for better flexibility, but for the first poc
-    // using String::starts_with is sufficient
+    // comparing each label list is sufficient
 
     // Construct the iterators that maps each scope with the ones it includes
 
     let mut scope_idents: Vec<Ident> = Vec::new();
     let mut match_patterns: Vec<TokenStream> = Vec::new();
 
-    for (name, scope) in scopes {
+    for scope in scopes.values() {
         
-        let matched_variants: Vec<Ident> = scopes.iter().filter_map(|(other_name, other_scope)| {
+        let matched_variants: Vec<Ident> = scopes.values().filter_map(|other_scope| {
 
-            // FIXME: This matches other scopes for which name is a prefix of the first label
-            // For example, the "test" scope will match "test.read" and "testing", but should
-            // only match "test" and "test.read"
-            if other_name != name && other_name.starts_with(name) {
+            if other_scope != scope && is_included(other_scope, scope) {
                 Some(other_scope.ident.clone())
             } else {
                 None

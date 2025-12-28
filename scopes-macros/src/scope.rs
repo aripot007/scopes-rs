@@ -3,6 +3,7 @@ use syn::Ident;
 use crate::{ScopeOpts, ScopeVariantOpts};
 
 // TODO: Implementation without cloning separator and prefix if feasible
+#[derive(PartialEq)]
 pub struct Scope {
 
     // Ident of the corresponding enum variant
@@ -39,8 +40,9 @@ fn get_labels_from_ident(ident: &Ident) -> Vec<String> {
             current_label = String::new();
         }
 
-        current_label.push(ch);
+        current_label.push(ch.to_ascii_lowercase());
     }
+    labels.push(current_label);
 
     return labels;
 }
