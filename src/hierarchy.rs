@@ -12,10 +12,25 @@
 #[cfg(feature = "hierarchy")]
 pub trait Hierarchized {
 
-    // TODO: Add example
     /// Check if a scope includes another one.
     /// 
     /// A parent scope includes its children and itself.
+    /// 
+    /// ```
+    /// # use scopes_macros::Scope;
+    /// # use scopes_rs::hierarchy::Hierarchized;
+    /// 
+    /// #[derive(PartialEq, Scope)]
+    /// enum MyScope {
+    ///     Foo,
+    ///     FooBar,
+    ///     Baz,
+    /// }
+    /// 
+    /// assert!(MyScope::Foo.includes(&MyScope::FooBar));
+    /// assert!(!MyScope::Foo.includes(&MyScope::Baz));
+    /// ```
+    /// 
     fn includes(&self, other: &Self) -> bool;
 
 
@@ -36,7 +51,7 @@ pub trait Hierarchized {
     /// let scope_a = MyScope::A;
     /// let scope_b = MyScope::B;
     /// 
-    /// assert_eq!(scope_a.included_in(&scope_b), scope_b.includes(&scope_a))
+    /// assert_eq!(scope_a.included_in(&scope_b), scope_b.includes(&scope_a));
     /// ```
     #[inline]
     fn included_in(&self, other: &Self) -> bool {
