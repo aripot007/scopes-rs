@@ -9,6 +9,7 @@
 /// 
 /// You only need to implement [Hierarchized::includes], as the default implementation of
 /// [Hierarchized::included_in] just calls [Hierarchized::includes].
+#[cfg(feature = "hierarchy")]
 pub trait Hierarchized {
 
     // TODO: Add example
@@ -23,8 +24,13 @@ pub trait Hierarchized {
     /// This is equivalent to using [Hierarchized::includes] on the other scope.
     /// 
     /// ```
+    /// # use scopes_macros::Scope;
+    /// # use scopes_rs::hierarchy::Hierarchized;
+    /// 
+    /// #[derive(PartialEq, Scope)]
     /// enum MyScope {
-    ///     // ...
+    ///     A,
+    ///     B,
     /// }
     /// 
     /// let scope_a = MyScope::A;
