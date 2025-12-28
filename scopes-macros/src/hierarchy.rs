@@ -69,7 +69,7 @@ pub fn implement_hierarchized(enum_ident: &Ident, scopes: &HashMap<String, Scope
     }.into()
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "hierarchy"))]
 mod tests {
     use proc_macro2::Span;
 
