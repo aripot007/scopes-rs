@@ -28,7 +28,7 @@ impl<S: Scope> Policy<S> {
         match self {
             
             #[cfg(not(feature = "hierarchy"))]
-            Policy::Scope(required) => scopes.contains(required),
+            Policy::Scope(required) => scopes.contains(&required),
 
             #[cfg(feature = "hierarchy")]
             Policy::Scope(required) => scopes.iter().any(|s| s.includes(required)),
