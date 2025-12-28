@@ -130,10 +130,13 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
         impl ::scopes_rs::scope::Scope for #enum_ident {}
     };
 
-    let mut scope_impl = quote! {
+    let scope_impl = quote! {
         #fromstr_impl
         #scope_impl
     };
+
+    #[cfg(feature = "hierarchy")]
+    let mut scope_impl = scope_impl;
 
     // Add Hierarchy implementation if the feature is enabled
     #[cfg(feature = "hierarchy")]
