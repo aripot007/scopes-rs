@@ -39,7 +39,6 @@ impl<S: Scope> Policy<S> {
             Policy::Empty => true,
         }
     }
-
 }
 
 impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitAnd<IntoPolicy> for Policy<S> {
