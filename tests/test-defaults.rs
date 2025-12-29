@@ -1,7 +1,10 @@
 use std::str::FromStr;
 
 use scopes_macros::Scope;
-use scopes_rs::{hierarchy::Hierarchized, policy::{IntoPolicy, Policy}};
+use scopes_rs::policy::{IntoPolicy, Policy};
+
+#[cfg(feature = "hierarchy")]
+use scopes_rs::hierarchy::Hierarchized;
 
 #[derive(Debug, PartialEq, Scope)]
 enum MyScope {
@@ -70,7 +73,7 @@ fn test_complex_policy() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "hierarchy"), ignore = "This test requires the `hierarchy` feature")]
+#[cfg(feature = "hierarchy")]
 fn test_hierarchy() {
 
     assert!(MyScope::Foo.includes(&MyScope::Foo));

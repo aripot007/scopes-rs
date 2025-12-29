@@ -1,7 +1,10 @@
 use std::str::FromStr;
 
 use scopes_macros::Scope;
-use scopes_rs::{hierarchy::Hierarchized, policy::IntoPolicy};
+use scopes_rs::policy::IntoPolicy;
+
+#[cfg(feature = "hierarchy")]
+use scopes_rs::hierarchy::Hierarchized;
 
 #[derive(Debug, PartialEq, Scope)]
 #[scope(prefix = "myprefix/", separator = "_")]
@@ -37,7 +40,7 @@ fn test_parsing() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "hierarchy"), ignore = "This test requires the `hierarchy` feature")]
+#[cfg(feature = "hierarchy")]
 fn test_hierarchy() {
 
     assert!(MyScope::Foo.includes(&MyScope::FooBar));
