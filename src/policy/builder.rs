@@ -7,6 +7,7 @@ impl<S: Scope> Policy<S> {
     }
 }
 
+#[cfg_attr(test, derive(Debug, Clone, PartialEq))]
 pub struct PolicyBuilder<S: Scope>(Option<Policy<S>>);
 
 impl<S: Scope> PolicyBuilder<S> {
@@ -16,6 +17,11 @@ impl<S: Scope> PolicyBuilder<S> {
     /// The default policy produced by an unmodified builder is a policy that rejects everything.
     pub fn new() -> Self {
         Self(None)
+    }
+
+    /// Create a builder from a policy
+    pub fn from_policy(policy: impl IntoPolicy<S>) -> Self {
+        Self(Some(policy.into_policy()))
     }
 
     /// Build the policy
@@ -133,5 +139,101 @@ impl<S: Scope> PolicyBuilder<S> {
 impl<S: Scope> IntoPolicy<S> for PolicyBuilder<S> {
     fn into_policy(self) -> Policy<S> {
         self.build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{policy::{IntoPolicy, Policy, PolicyBuilder}, scope::Scope};
+
+    #[cfg(feature = "hierarchy")]
+    use crate::hierarchy::Hierarchized;
+
+    impl Scope for String {}
+
+    #[cfg(feature = "hierarchy")]
+    impl Hierarchized for String {
+        fn includes(&self, other: &Self) -> bool {
+            if self == other {
+                return true;
+            }
+            other.starts_with(self)
+        }
+    }
+
+    #[test]
+    fn test_default_policy() {
+        let policy = PolicyBuilder::<String>::new().build();
+
+        assert_eq!(Policy::<String>::DenyAll, policy);
+    }
+
+    #[test]
+    fn test_syntactic_sugar() {
+
+        // Constructors
+
+        let scopes = vec!["foo".to_string(), "bar".to_string()];
+
+        assert_eq!(PolicyBuilder::all_of(&scopes), PolicyBuilder::new().require_all(&scopes));
+        assert_eq!(PolicyBuilder::one_of(&scopes), PolicyBuilder::new().require_any(&scopes));
+
+        let policy = "foo".to_string().into_policy();
+
+        assert_eq!(PolicyBuilder::not(policy.clone()), PolicyBuilder::from_policy(!policy));
+
+        let builder = PolicyBuilder::from_policy("foo".to_string());
+
+        assert_eq!(
+            builder.clone().and("bar".to_string()),
+            builder.clone().require_all(["bar".to_string()])
+        );
+
+        assert_eq!(
+            builder.clone().or("bar".to_string()),
+            PolicyBuilder::from_policy("foo".to_string().into_policy() | "bar".to_string())
+        );
+
+        let scope = "foo".to_string();
+
+        assert_eq!(PolicyBuilder::new().require(scope.clone()), PolicyBuilder::from_policy(&scope));
+    }
+
+    #[test]
+    fn test_complex_policy() {
+
+        let expected = Policy::OneOf(vec![
+            Policy::Scope("admin".to_string()),
+            Policy::AllOf(vec![
+                Policy::Scope("user".to_string()), 
+                !Policy::Scope("muted".to_string()),
+            ]),
+            Policy::AllOf(vec![
+                Policy::OneOf(vec![
+                    Policy::Scope("bar".to_string()),
+                    Policy::Scope("baz".to_string())
+                ]),
+                Policy::Scope("foo".to_string()),
+            ]),
+        ]);
+
+        let policy = PolicyBuilder::new()
+            .require("admin".to_string())
+            .or(
+                PolicyBuilder::not("muted".to_string()).and("user".to_string())
+            )
+            .or(
+                PolicyBuilder::new()
+                    .require("foo".to_string())
+                    .and(
+                        PolicyBuilder::one_of([
+                            "bar".to_string(),
+                            "baz".to_string()
+                        ])
+                    )
+            )
+            .build();
+
+        assert_eq!(expected, policy);
     }
 }
