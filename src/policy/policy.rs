@@ -152,6 +152,16 @@ where
     }
 }
 
+impl<S> From<&S> for Policy<S>
+where
+    S: Scope + Clone
+{
+    fn from(value: &S) -> Self {
+        Policy::Scope(value.clone())
+    }
+}
+
+
 pub trait IntoPolicy<S> where S: Scope {
     fn into_policy(self) -> Policy<S>;
 }
