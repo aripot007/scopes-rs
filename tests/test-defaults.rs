@@ -33,7 +33,7 @@ fn test_simple_policy() {
     assert!(single_scope.verify(&[&MyScope::Foo]));
     assert!(!single_scope.verify(&[&MyScope::FooBar]));
 
-    let accept_all = Policy::<MyScope>::Empty;
+    let accept_all = Policy::<MyScope>::AllowAll;
 
     assert!(accept_all.verify(&[]));
 

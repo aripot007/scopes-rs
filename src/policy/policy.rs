@@ -17,8 +17,11 @@ pub enum Policy<S: Scope> {
     /// Requires a policy not to be verified
     Not(Box<Policy<S>>),
 
-    /// Empty policy that accepts every scope
-    Empty,
+    /// Policy that always accept everything
+    AllowAll,
+
+    /// Policy that accepts nothing
+    DenyAll,
 }
 
 impl<S: Scope> Policy<S> {
@@ -36,7 +39,8 @@ impl<S: Scope> Policy<S> {
             Policy::Not(policy) => !policy.verify(scopes),
             Policy::OneOf(policies) => policies.iter().any(|p| p.verify(scopes)),
             Policy::AllOf(policies) => policies.iter().all(|p| p.verify(scopes)),
-            Policy::Empty => true,
+            Policy::AllowAll => true,
+            Policy::DenyAll => false,
         }
     }
 }
@@ -53,6 +57,9 @@ impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitAnd<IntoPolicy> for Policy<S> {
                 left.append(&mut right);
                 Policy::AllOf(left)
             },
+
+            // If one of the policy is DenyAll, return DenyAll as it would always fail anyway
+            (Policy::DenyAll, _) | (_, Policy::DenyAll) => Policy::DenyAll,
 
             // If one of them is already AllOf, add the other to it
             (Policy::AllOf(mut policies), other)
@@ -80,6 +87,9 @@ impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitOr<IntoPolicy> for Policy<S> {
                 Policy::OneOf(left)
             },
 
+            // If one of the policy is AllowAll, return AllowAll as it would always evaluate to true
+            (Policy::AllowAll, _) | (_, Policy::AllowAll) => Policy::AllowAll,
+
             // If one of them is already OneOf, add the other to it
             (Policy::OneOf(mut policies), other)
             | (other, Policy::OneOf(mut policies)) => {
@@ -98,6 +108,8 @@ impl<S: Scope> Not for Policy<S> {
 
     fn not(self) -> Self::Output {
         match self {
+            Policy::AllowAll => Policy::DenyAll,
+            Policy::DenyAll => Policy::AllowAll,
             Policy::Not(policy) => *policy,
             p => Policy::Not(Box::new(p)),
         }
