@@ -1,3 +1,5 @@
 mod policy;
-pub mod builder;
+mod builder;
+
 pub use policy::*;
+pub use builder::PolicyBuilder;
