@@ -4,7 +4,7 @@ use crate::scope::Scope;
 
 /// A policy to verify a set of scopes
 #[derive(PartialEq)]
-#[cfg_attr(feature = "debug", derive(Debug))]
+#[cfg_attr(any(test, feature = "debug"), derive(Debug))]
 pub enum Policy<S: Scope> {
 
     /// Requires a scope to be present
@@ -24,6 +24,20 @@ pub enum Policy<S: Scope> {
 
     /// Policy that accepts nothing
     DenyAll,
+}
+
+impl<S> Clone for Policy<S>
+where S: Scope + Clone {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Scope(arg0) => Self::Scope(arg0.clone()),
+            Self::OneOf(arg0) => Self::OneOf(arg0.clone()),
+            Self::AllOf(arg0) => Self::AllOf(arg0.clone()),
+            Self::Not(arg0) => Self::Not(arg0.clone()),
+            Self::AllowAll => Self::AllowAll,
+            Self::DenyAll => Self::DenyAll,
+        }
+    }
 }
 
 impl<S> Policy<S> where S: Scope {
