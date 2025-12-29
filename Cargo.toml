@@ -16,7 +16,12 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [features]
+
+# Enable Hierarchized trait and scopes hierarchy
 hierarchy = ["scopes-macros/hierarchy"]
+
+# Enable additional traits for debugging, such as deriving Debug on the Policy enum
+debug = []
 
 [dependencies]
 scopes-macros = { path = "./scopes-macros" }

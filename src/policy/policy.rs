@@ -1,8 +1,11 @@
+// FIXME: The generics in the impl are quite messy
 use std::ops::{BitAnd, BitOr, Not};
 
 use crate::scope::Scope;
 
 /// A policy to verify a set of scopes
+#[derive(PartialEq)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 pub enum Policy<S: Scope> {
 
     /// Requires a scope to be present
