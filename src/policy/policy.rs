@@ -1,4 +1,3 @@
-// FIXME: The generics in the impl are quite messy
 use std::ops::{BitAnd, BitOr, Not};
 
 use crate::scope::Scope;
@@ -27,7 +26,7 @@ pub enum Policy<S: Scope> {
     DenyAll,
 }
 
-impl<S: Scope> Policy<S> {
+impl<S> Policy<S> where S: Scope {
 
     /// Check if a set of scopes is authorized by a policy
     pub fn verify(&self, scopes: &[&S]) -> bool {
@@ -48,11 +47,15 @@ impl<S: Scope> Policy<S> {
     }
 }
 
-impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitAnd<IntoPolicy> for Policy<S> {
+impl<S, I> BitAnd<I> for Policy<S>
+where 
+    S: Scope,
+    I: IntoPolicy<S>,
+{
     type Output = Policy<S>;
 
-    fn bitand(self, rhs: IntoPolicy) -> Self::Output {
-        let rhs: Policy<S> = rhs.into();
+    fn bitand(self, rhs: I) -> Self::Output {
+        let rhs: Policy<S> = rhs.into_policy();
         match (self, rhs) {
             // If the 2 policies are AllOf, merge them
             (Policy::AllOf(mut left), Policy::AllOf(mut right)) => {
@@ -77,11 +80,15 @@ impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitAnd<IntoPolicy> for Policy<S> {
     }
 }
 
-impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitOr<IntoPolicy> for Policy<S> {
+impl<S, I> BitOr<I> for Policy<S>
+where 
+    S: Scope,
+    I: IntoPolicy<S>,
+{
     type Output = Policy<S>;
 
-    fn bitor(self, rhs: IntoPolicy) -> Self::Output {
-        let rhs: Policy<S> = rhs.into();
+    fn bitor(self, rhs: I) -> Self::Output {
+        let rhs: Policy<S> = rhs.into_policy();
         match (self, rhs) {
             // If the 2 policies are OneOf, merge them
             (Policy::OneOf(mut left), Policy::OneOf(mut right)) => {
@@ -106,7 +113,10 @@ impl<S: Scope, IntoPolicy: Into<Policy<S>>> BitOr<IntoPolicy> for Policy<S> {
     }
 }
 
-impl<S: Scope> Not for Policy<S> {
+impl<S> Not for Policy<S>
+where 
+    S: Scope,
+{
     type Output = Policy<S>;
 
     fn not(self) -> Self::Output {
@@ -119,13 +129,16 @@ impl<S: Scope> Not for Policy<S> {
     }
 }
 
-impl<S: Scope> From<S> for Policy<S> {
+impl<S> From<S> for Policy<S>
+where
+    S: Scope
+{
     fn from(value: S) -> Self {
         Policy::Scope(value)
     }
 }
 
-pub trait IntoPolicy<S: Scope> {
+pub trait IntoPolicy<S> where S: Scope {
     fn into_policy(self) -> Policy<S>;
 }
 
