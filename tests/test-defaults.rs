@@ -33,16 +33,17 @@ fn test_invalid_parsing() {
 fn test_simple_policy() {
     let single_scope = MyScope::Foo.into_policy();
 
-    assert!(single_scope.verify(&[&MyScope::Foo]));
-    assert!(!single_scope.verify(&[&MyScope::FooBar]));
+    assert!(single_scope.verify(&[MyScope::Foo]));
+    assert!(!single_scope.verify(&[MyScope::FooBar]));
 
     let accept_all = Policy::<MyScope>::AllowAll;
 
-    assert!(accept_all.verify(&[]));
+    assert!(accept_all.verify(Vec::<&MyScope>::new()));
 
     let reject_all = !accept_all;
-    assert!(!reject_all.verify(&[]));
-    assert!(!reject_all.verify(&[&MyScope::Foo, &MyScope::FooBar, &MyScope::Baz, &MyScope::Bar]));
+    
+    assert!(!reject_all.verify(Vec::<&MyScope>::new()));
+    assert!(!reject_all.verify(&[MyScope::Foo, MyScope::FooBar, MyScope::Baz, MyScope::Bar]));
 }
 
 #[test]
@@ -52,23 +53,23 @@ fn test_complex_policy() {
         MyScope::FooBar.into_policy() 
         | (MyScope::Bar.into_policy() & MyScope::Baz.into_policy());
     
-    assert!(foobar_or_bar_and_baz.verify(&[&MyScope::FooBar]));
-    assert!(foobar_or_bar_and_baz.verify(&[&MyScope::Bar, &MyScope::Baz]));
-    assert!(foobar_or_bar_and_baz.verify(&[&MyScope::Bar, &MyScope::FooBar, &MyScope::Baz]));
-    assert!(!foobar_or_bar_and_baz.verify(&[&MyScope::Bar]));
-    assert!(!foobar_or_bar_and_baz.verify(&[&MyScope::Baz]));
+    assert!(foobar_or_bar_and_baz.verify(&[MyScope::FooBar]));
+    assert!(foobar_or_bar_and_baz.verify(&[MyScope::Bar, MyScope::Baz]));
+    assert!(foobar_or_bar_and_baz.verify(&[MyScope::Bar, MyScope::FooBar, MyScope::Baz]));
+    assert!(!foobar_or_bar_and_baz.verify(&[MyScope::Bar]));
+    assert!(!foobar_or_bar_and_baz.verify(&[MyScope::Baz]));
 
     #[cfg(feature = "hierarchy")]
-    assert!(foobar_or_bar_and_baz.verify(&[&MyScope::Foo]));
+    assert!(foobar_or_bar_and_baz.verify(&[MyScope::Foo]));
 
     #[cfg(not(feature = "hierarchy"))]
-    assert!(!foobar_or_bar_and_baz.verify(&[&MyScope::Foo]));
+    assert!(!foobar_or_bar_and_baz.verify(&[MyScope::Foo]));
 
     let not_baz = !MyScope::Baz.into_policy();
 
-    assert!(not_baz.verify(&[]));
-    assert!(not_baz.verify(&[&MyScope::Foo]));
-    assert!(!not_baz.verify(&[&MyScope::Baz]));
+    assert!(not_baz.verify(Vec::<&MyScope>::new()));
+    assert!(not_baz.verify(&[MyScope::Foo]));
+    assert!(!not_baz.verify(&[MyScope::Baz]));
 
 }
 

@@ -14,7 +14,7 @@ pub fn main() {
 
     let s = Scopes::User;
 
-    let b = matches!(s, Scopes::User | Scopes::UserProfile | Scopes::UserSettings);
+    let _b = matches!(s, Scopes::User | Scopes::UserProfile | Scopes::UserSettings);
 
     /*
     let policy: Policy<Scopes> = Scopes::UserProfile.into_policy() & Scopes::UserSettings;

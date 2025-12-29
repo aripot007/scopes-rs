@@ -144,22 +144,7 @@ impl<S: Scope> IntoPolicy<S> for PolicyBuilder<S> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{policy::{IntoPolicy, Policy, PolicyBuilder}, scope::Scope};
-
-    #[cfg(feature = "hierarchy")]
-    use crate::hierarchy::Hierarchized;
-
-    impl Scope for String {}
-
-    #[cfg(feature = "hierarchy")]
-    impl Hierarchized for String {
-        fn includes(&self, other: &Self) -> bool {
-            if self == other {
-                return true;
-            }
-            other.starts_with(self)
-        }
-    }
+    use crate::policy::{IntoPolicy, Policy, PolicyBuilder};
 
     #[test]
     fn test_default_policy() {

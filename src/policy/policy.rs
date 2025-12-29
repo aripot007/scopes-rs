@@ -1,6 +1,6 @@
 use std::ops::{BitAnd, BitOr, Not};
 
-use crate::scope::Scope;
+use crate::scope::{AsScopeRef, Scope};
 
 /// A policy to verify a set of scopes
 #[derive(PartialEq)]
@@ -43,18 +43,22 @@ where S: Scope + Clone {
 impl<S> Policy<S> where S: Scope {
 
     /// Check if a set of scopes is authorized by a policy
-    pub fn verify(&self, scopes: &[&S]) -> bool {
+    pub fn verify<Iterator>(&self, scopes: Iterator) -> bool 
+    where 
+        Iterator: IntoIterator + Clone,
+        Iterator::Item: AsScopeRef<S>,
+    {
         match self {
             
             #[cfg(not(feature = "hierarchy"))]
-            Policy::Scope(required) => scopes.contains(&required),
+            Policy::Scope(required) => scopes.into_iter().find(|s| s.as_scope_ref() == required).is_some(),
 
             #[cfg(feature = "hierarchy")]
-            Policy::Scope(required) => scopes.iter().any(|s| s.includes(required)),
+            Policy::Scope(required) => scopes.into_iter().any(|s| s.as_scope_ref().includes(required)),
 
             Policy::Not(policy) => !policy.verify(scopes),
-            Policy::OneOf(policies) => policies.iter().any(|p| p.verify(scopes)),
-            Policy::AllOf(policies) => policies.iter().all(|p| p.verify(scopes)),
+            Policy::OneOf(policies) => policies.iter().any(|p| p.verify(scopes.clone())),
+            Policy::AllOf(policies) => policies.iter().all(|p| p.verify(scopes.clone())),
             Policy::AllowAll => true,
             Policy::DenyAll => false,
         }

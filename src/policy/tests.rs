@@ -52,8 +52,12 @@ fn test_single_scope_policy() {
 
     assert_eq!(policy, MyScope::Foo.into_policy());
 
-    assert!(policy.verify(&[&MyScope::Foo]));
-    assert!(!policy.verify(&[&MyScope::FooBar]));
+    let scopes = vec![MyScope::Foo];
+
+    assert!(policy.verify(&scopes));
+    
+    assert!(policy.verify(&[MyScope::Foo]));
+    assert!(!policy.verify(&[MyScope::FooBar]));
 }
 
 #[test]
@@ -62,10 +66,10 @@ fn test_and_policy() {
 
     assert_eq!(policy, Policy::AllOf(vec![Policy::Scope(MyScope::Foo), Policy::Scope(MyScope::Bar)]));
 
-    assert!(policy.verify(&[&MyScope::Foo, &MyScope::Bar]));
+    assert!(policy.verify(&[MyScope::Foo, MyScope::Bar]));
 
-    assert!(!policy.verify(&[&MyScope::Foo]));
-    assert!(!policy.verify(&[&MyScope::Bar]));
+    assert!(!policy.verify(&[MyScope::Foo]));
+    assert!(!policy.verify(&[MyScope::Bar]));
 }
 
 #[test]
@@ -156,11 +160,11 @@ fn test_or_policy() {
 
     assert_eq!(policy, Policy::OneOf(vec![Policy::Scope(MyScope::Foo), Policy::Scope(MyScope::Bar)]));
 
-    assert!(policy.verify(&[&MyScope::Foo, &MyScope::Bar]));
-    assert!(policy.verify(&[&MyScope::Foo]));
-    assert!(policy.verify(&[&MyScope::Bar]));
+    assert!(policy.verify(&[MyScope::Foo, MyScope::Bar]));
+    assert!(policy.verify(&[MyScope::Foo]));
+    assert!(policy.verify(&[MyScope::Bar]));
 
-    assert!(!policy.verify(&[&MyScope::FooBar]));
+    assert!(!policy.verify(&[MyScope::FooBar]));
 }
 
 #[test]
@@ -170,20 +174,23 @@ fn test_not_policy() {
     assert_eq!(policy, Policy::Not(Box::new(Policy::Scope(MyScope::Foo))));
     assert_eq!(!policy.clone(), Policy::Scope(MyScope::Foo));
 
-    assert!(!policy.verify(&[&MyScope::Foo]));
-    assert!(!policy.verify(&[&MyScope::Bar, &MyScope::Foo]));
+    assert!(!policy.verify(&[MyScope::Foo]));
+    assert!(!policy.verify(&[MyScope::Bar, MyScope::Foo]));
     
-    assert!(policy.verify(&[&MyScope::Bar]));
-    assert!(policy.verify(&[]));
+    assert!(policy.verify(&[MyScope::Bar]));
+    assert!(policy.verify(Vec::<MyScope>::new()));
 }
 
 #[test]
 fn test_allow_deny_policy() {
-    assert!(Policy::<MyScope>::AllowAll.verify(&[]));
-    assert!(Policy::<MyScope>::AllowAll.verify(&[&MyScope::Foo, &MyScope::FooBar, &MyScope::Bar]));
+    let no_scopes: Vec<MyScope> = vec![];
+    let all_scopes = vec![MyScope::Foo, MyScope::FooBar, MyScope::Bar];
 
-    assert!(!Policy::<MyScope>::DenyAll.verify(&[]));
-    assert!(!Policy::<MyScope>::DenyAll.verify(&[&MyScope::Foo, &MyScope::FooBar, &MyScope::Bar]));
+    assert!(Policy::<MyScope>::AllowAll.verify(&no_scopes));
+    assert!(Policy::<MyScope>::AllowAll.verify(&all_scopes));
+
+    assert!(!Policy::<MyScope>::DenyAll.verify(&no_scopes));
+    assert!(!Policy::<MyScope>::DenyAll.verify(&all_scopes));
 
     assert_eq!(!Policy::<MyScope>::AllowAll, Policy::<MyScope>::DenyAll);
     assert_eq!(!Policy::<MyScope>::DenyAll, Policy::<MyScope>::AllowAll);
@@ -194,8 +201,8 @@ fn test_hierarchy() {
     let policy = MyScope::FooBar.into_policy();
 
     #[cfg(feature = "hierarchy")]
-    assert_eq!(true, policy.verify(&[&MyScope::Foo]));
+    assert_eq!(true, policy.verify(&[MyScope::Foo]));
 
     #[cfg(not(feature = "hierarchy"))]
-    assert_eq!(false, policy.verify(&[&MyScope::Foo]));
+    assert_eq!(false, policy.verify(&[MyScope::Foo]));
 }

@@ -1,10 +1,9 @@
+#![cfg_attr(all(test, not(feature = "hierarchy")), ignore("This example requires the `hierarchy` feature"))]
+
 use scopes_macros::Scope;
 use scopes_rs::policy::{IntoPolicy, Policy};
 
-#[cfg(not(feature = "hierarchy"))]
-compile_error!("This example requires the `hierarchy` feature");
-
-#[derive(PartialEq, Scope)]
+#[derive(Clone, PartialEq, Scope)]
 enum Scopes {
     User,
     UserSettings,
@@ -22,10 +21,10 @@ pub fn main() {
 
     println!("{}", policy.verify(&[&scope_user_profile]));
     println!("{}", policy.verify(&[&scope_user_settings, &scope_user_profile]));
-    println!("{}", policy.verify(&[&scope_user]));
+    println!("{}", policy.verify(&[&scope_user.clone()]));
 
     let policy: Policy<Scopes> = Scopes::UserProfileRead.into();
 
-    println!("{}", policy.verify(&[&Scopes::UserProfile, &Scopes::UserSettings]));
+    println!("{}", policy.verify(&[Scopes::UserProfile, Scopes::UserSettings]));
     println!("{}", policy.verify(&[&scope_user]));
 }

@@ -49,9 +49,9 @@ fn test_hierarchy() {
    
     let policy = MyScope::RenameSeparated.into_policy();
     
-    assert!(policy.verify(&[&MyScope::RenameSeparated]));
-    assert!(policy.verify(&[&MyScope::Foo]));
-    assert!(!policy.verify(&[&MyScope::FooBar]));
-    assert!(!policy.verify(&[&MyScope::Bar]));
+    assert!(policy.verify(&[MyScope::RenameSeparated]));
+    assert!(policy.verify(&[MyScope::Foo]));
+    assert!(!policy.verify(&[MyScope::FooBar]));
+    assert!(!policy.verify(&[MyScope::Bar]));
 }
 
