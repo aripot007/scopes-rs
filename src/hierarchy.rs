@@ -1,3 +1,6 @@
+//! Contains the required trait for scope hierarchy
+//! 
+//! Requires the `hierarchy` feature.
 
 // TODO: Better documentation
 /// A trait used to hierarchize scopes.
@@ -17,8 +20,10 @@ pub trait Hierarchized {
     /// A parent scope includes its children and itself.
     /// 
     /// ```
-    /// # use scopes_macros::Scope;
-    /// # use scopes_rs::hierarchy::Hierarchized;
+    /// use scopes_rs::{
+    ///     derive::Scope,
+    ///     hierarchy::Hierarchized,
+    /// };
     /// 
     /// #[derive(PartialEq, Scope)]
     /// enum MyScope {
@@ -39,8 +44,10 @@ pub trait Hierarchized {
     /// This is equivalent to using [Hierarchized::includes] on the other scope.
     /// 
     /// ```
-    /// # use scopes_macros::Scope;
-    /// # use scopes_rs::hierarchy::Hierarchized;
+    /// use scopes_rs::{
+    ///     derive::Scope,
+    ///     hierarchy::Hierarchized,
+    /// };
     /// 
     /// #[derive(PartialEq, Scope)]
     /// enum MyScope {

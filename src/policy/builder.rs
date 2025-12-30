@@ -1,12 +1,26 @@
 use crate::{policy::{IntoPolicy, Policy}, scope::Scope};
 
-
-impl<S: Scope> Policy<S> {
-    pub fn builder() -> PolicyBuilder<S> {
-        PolicyBuilder::new()
-    }
-}
-
+/// A builder to help create complex policies
+/// 
+/// ```
+/// # use scopes_rs::derive::Scope;
+/// # #[derive(Clone, PartialEq, Scope)]
+/// # enum MyScope {Foo, Bar, Baz}
+/// use scopes_rs::policy::PolicyBuilder;
+/// 
+/// let complex_policy = PolicyBuilder::new()
+///     .require(MyScope::Foo)
+///     .require(MyScope::Bar)
+///     .or(
+///        PolicyBuilder::not(MyScope::Foo).and(MyScope::Baz) 
+///     )
+///     .build();
+/// 
+/// assert!(complex_policy.verify([MyScope::Foo, MyScope::Bar]));
+/// assert!(complex_policy.verify([MyScope::Bar, MyScope::Baz]));
+/// assert!(!complex_policy.verify([MyScope::Foo, MyScope::Baz]));
+/// ```
+/// 
 #[cfg_attr(test, derive(Debug, Clone, PartialEq))]
 pub struct PolicyBuilder<S: Scope>(Option<Policy<S>>);
 

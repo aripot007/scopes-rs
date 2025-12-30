@@ -3,6 +3,22 @@ use std::ops::{BitAnd, BitOr, Not};
 use crate::scope::{AsScopeRef, Scope};
 
 /// A policy to verify a set of scopes
+/// 
+/// Policies can be combined using the `&`, `|` and `!` operators :
+/// 
+/// ```
+/// # use scopes_rs::derive::Scope;
+/// # use scopes_rs::policy::IntoPolicy;
+/// # #[derive(Clone, PartialEq, Scope)]
+/// # enum MyScope {Foo, Bar, Baz}
+/// let policy_a = MyScope::Foo.into_policy() & MyScope::Bar.into_policy();
+/// 
+/// let policy_b = (MyScope::Baz.into_policy() | MyScope::Bar.into_policy()) & !policy_a;
+/// ```
+/// 
+/// You can also use a [`PolicyBuilder<S>`](crate::policy::PolicyBuilder) to build
+/// complex policies.
+/// 
 #[derive(PartialEq)]
 #[cfg_attr(any(test, feature = "debug"), derive(Debug))]
 pub enum Policy<S: Scope> {
@@ -165,8 +181,24 @@ where
     }
 }
 
-
+/// A trait implemented by a type that can be converted into a [`Policy<S>`].
+/// 
+/// This is implemented for anything that implements [`Scope`], and 
+/// allows passing them directly to a [`PolicyBuilder<S>`](crate::policy::PolicyBuilder)
+/// or on the right of `&`, `|` and `!` operators when combining policies.
+/// 
+/// ```
+/// # use scopes_rs::derive::Scope;
+/// # #[derive(Clone, PartialEq, Scope)]
+/// # enum MyScope {Foo, Bar, Baz}
+/// use scopes_rs::policy::{IntoPolicy, PolicyBuilder};
+/// 
+/// let policy = PolicyBuilder::not(MyScope::Bar).build();
+/// let policy = policy | MyScope::Baz;
+/// ```
 pub trait IntoPolicy<S> where S: Scope {
+
+    /// Converts this type to a [`Policy<S>`]
     fn into_policy(self) -> Policy<S>;
 }
 

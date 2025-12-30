@@ -1,3 +1,9 @@
+#![warn(missing_docs)]
+//! Macros for [`scopes-rs`](https://github.com/aripot007/scopes-rs)
+//!
+//! This crate is re-exported by `scopes-rs`, and its documentation should be
+//! browsed from the `scopes-rs` crate.
+//!  
 extern crate proc_macro2;
 
 use std::collections::HashMap;
@@ -42,6 +48,17 @@ struct ScopeVariantOpts {
     rename: Option<String>,
 }
 
+/// ## Optional `#[scope(...)]` attributes for the enum
+/// 
+/// - `separator = "..."`: Change the separator between scope labels. Defaults to `"."`
+/// - `prefix = "..."`: Add a prefix to every generated scope name. Default is an empty prefix
+/// - `hierarchy = bool`: Enable or disable generation of the `Hierarchized` trait. Requires the `hierarchy`
+///     feature. Defaults to `true`.
+/// 
+/// ## Optional `#[scope(...)]` attributes for enum variants
+/// 
+/// - `rename = "..."`: Use a specific name instead of inferring it from the variant name
+/// 
 #[proc_macro_derive(Scope, attributes(scope))]
 pub fn derive_into_scope(item: TokenStream) -> TokenStream {
     

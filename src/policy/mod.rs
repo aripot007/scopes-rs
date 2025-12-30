@@ -1,3 +1,5 @@
+//! Policy creation and verification
+
 mod policy;
 mod builder;
 

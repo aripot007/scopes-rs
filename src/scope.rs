@@ -1,17 +1,42 @@
+//! Contains the trait that types representing a scope should implement
+
 use std::str::FromStr;
 
 #[cfg(feature = "hierarchy")]
 use crate::hierarchy::Hierarchized;
-
+use crate::policy::{Policy, PolicyBuilder};
 
 #[cfg(not(feature = "hierarchy"))]
+/// A trait implemented by types representing a scope.
+/// 
+/// The [`FromStr`] implementation is used to parse scopes
+/// from strings.
 pub trait Scope: FromStr + PartialEq {}
 
 #[cfg(feature = "hierarchy")]
+/// A trait implemented by types representing a scope.
+/// 
+/// The [`FromStr`] implementation is used to parse scopes
+/// from strings.
+/// 
+/// The [`Hierarchized`] trait is only required with the `hierarchy`
+/// feature.
 pub trait Scope: FromStr + PartialEq + Hierarchized {}
 
-pub trait AsScopeRef<S: ?Sized> {
+
+/// Used to do a cheap reference-to-reference conversion
+pub trait AsScopeRef<S: Scope> {
+    /// Converts this type to a reference 
     fn as_scope_ref(&self) -> &S;
+}
+
+impl<S: Scope> Policy<S> {
+    /// Create a new [`PolicyBuilder<S>`]
+    /// 
+    /// Equivalent to calling [`PolicyBuilder<S>::new`]
+    pub fn builder() -> PolicyBuilder<S> {
+        PolicyBuilder::new()
+    }
 }
 
 impl<S: Scope> AsScopeRef<S> for S {
