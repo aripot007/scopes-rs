@@ -20,6 +20,9 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
+exclude = [
+    ".vscode/*"
+]
 
 [package.metadata.docs.rs]
 all-features = true
