@@ -13,7 +13,7 @@ repository = "https://github.com/aripot007/scopes-rs"
 
 [package]
 name = "scopes-rs"
-description = "strongly typed scoped authorization library"
+description = "Strongly typed scoped authorization library"
 keywords = ["scope", "authorization"]
 version.workspace = true
 edition.workspace = true
