@@ -30,4 +30,4 @@ all-features = true
 hierarchy = ["scopes-macros/hierarchy"]
 
 [dependencies]
-scopes-macros = { path = "./scopes-macros" }
+scopes-macros = { version = "0.1.0", path = "./scopes-macros" }
