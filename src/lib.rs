@@ -58,6 +58,19 @@ pub mod derive {
     /// 
     ///  When using the `rename` attribute, the labels will be parsed by splitting the name by `separator`.
     /// 
+    /// # Errors
+    /// 
+    /// Compilation will fail if scopes have conflicting names :
+    /// 
+    /// ```compile_fail
+    /// #[derive(Clone, PartialEq, Scope)]
+    /// enum MyScope {
+    ///     Foo,
+    ///     #[scope(rename = "foo")]
+    ///     Bar,
+    /// }
+    /// ```
+    /// 
     /// # Optional attributes 
     /// 
     /// [`Scope`]: ../scope/Scope
