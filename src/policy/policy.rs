@@ -42,6 +42,12 @@ pub enum Policy<S: Scope> {
     DenyAll,
 }
 
+impl<S> Default for Policy<S> where S: Scope {
+    fn default() -> Self {
+        Policy::DenyAll
+    }
+}
+
 impl<S> Clone for Policy<S>
 where S: Scope + Clone {
     fn clone(&self) -> Self {

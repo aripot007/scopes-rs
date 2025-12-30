@@ -206,3 +206,8 @@ fn test_hierarchy() {
     #[cfg(not(feature = "hierarchy"))]
     assert_eq!(false, policy.verify(&[MyScope::Foo]));
 }
+
+#[test]
+fn test_default_policy() {
+    assert_eq!(Policy::<MyScope>::DenyAll, Policy::<MyScope>::default())
+}
