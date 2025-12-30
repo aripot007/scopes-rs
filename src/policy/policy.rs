@@ -19,8 +19,7 @@ use crate::scope::{AsScopeRef, Scope};
 /// You can also use a [`PolicyBuilder<S>`](crate::policy::PolicyBuilder) to build
 /// complex policies.
 /// 
-#[derive(PartialEq)]
-#[cfg_attr(any(test, feature = "debug"), derive(Debug))]
+#[derive(Debug, PartialEq)]
 pub enum Policy<S: Scope> {
 
     /// Requires a scope to be present
