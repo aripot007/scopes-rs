@@ -7,6 +7,9 @@ license.workspace = true
 license.authors = true
 repository.workspace = true
 
+[package.metadata.docs.rs]
+all-features = true
+
 [lib]
 proc-macro = true
 

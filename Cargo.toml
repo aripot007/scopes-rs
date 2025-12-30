@@ -21,6 +21,9 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 
 # Enable Hierarchized trait and scopes hierarchy
