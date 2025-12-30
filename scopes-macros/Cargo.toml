@@ -4,7 +4,7 @@ description = "Macros for scopes-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-license.authors = true
+authors.workspace = true
 repository.workspace = true
 
 [package.metadata.docs.rs]
