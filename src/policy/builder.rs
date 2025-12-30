@@ -150,6 +150,12 @@ impl<S: Scope> PolicyBuilder<S> {
     }
 }
 
+impl<S: Scope> Default for PolicyBuilder<S> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<S: Scope> IntoPolicy<S> for PolicyBuilder<S> {
     fn into_policy(self) -> Policy<S> {
         self.build()
@@ -165,6 +171,11 @@ mod tests {
         let policy = PolicyBuilder::<String>::new().build();
 
         assert_eq!(Policy::<String>::DenyAll, policy);
+    }
+
+    #[test]
+    fn test_default_builder() {
+        assert_eq!(PolicyBuilder::<String>::default(), PolicyBuilder::<String>::new())
     }
 
     #[test]
