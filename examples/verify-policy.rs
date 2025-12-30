@@ -1,6 +1,8 @@
 use std::str::FromStr;
-
-use scopes_rs::{policy::{IntoPolicy, PolicyBuilder}, derive::Scope};
+use scopes_rs::{
+    policy::{IntoPolicy, PolicyBuilder},
+    derive::Scope
+};
 
 
 #[derive(Clone, PartialEq, Scope)]
@@ -20,10 +22,9 @@ enum ApiScope {
 pub fn main() {
 
     // Parse the scopes from a web request for example
-    let scopes = parse_scopes("https://myapi.test/profile https://myapi.test/contacts.readonly");
+    let scopes: Vec<ApiScope> = parse_scopes("https://myapi.test/profile https://myapi.test/contacts.readonly");
 
-    // Check if a policy accepts the given set of scopes
-
+    // Convert a single scope in a policy that requires this scope
     let admin_policy = ApiScope::Admin.into_policy();
 
     assert_eq!(false, admin_policy.verify(&scopes));
