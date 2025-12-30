@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use scopes_macros::Scope;
-use scopes_rs::policy::{IntoPolicy, Policy};
+use scopes_rs::{error::ScopeParseError, policy::{IntoPolicy, Policy}};
 
 #[cfg(feature = "hierarchy")]
 use scopes_rs::hierarchy::Hierarchized;
@@ -24,9 +24,16 @@ fn test_parsing() {
 }
 
 #[test]
-#[should_panic]
 fn test_invalid_parsing() {
-    MyScope::from_str("not_a_scope").unwrap();
+    assert!(MyScope::from_str("not_a_scope").is_err());
+    assert!(MyScope::from_str("foobar").is_err());
+    assert!(MyScope::from_str("").is_err());
+
+    // Check that generated implementation uses the correct error
+    match MyScope::from_str("") {
+        Ok(_) => panic!("Parsing an empty string should return an error"),
+        Err(ScopeParseError(_)) => (),
+    }
 }
 
 #[test]

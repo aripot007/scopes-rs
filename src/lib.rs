@@ -8,6 +8,8 @@
 
 pub mod scope;
 
+pub mod error;
+
 #[cfg(feature = "hierarchy")]
 pub mod hierarchy;
 

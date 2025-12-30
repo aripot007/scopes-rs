@@ -132,12 +132,12 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
 
     let fromstr_impl = quote! {
         impl ::std::str::FromStr for #enum_ident {
-            type Err = ();
+            type Err = ::scopes_rs::error::ScopeParseError;
 
             fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
                 match s {
                     #(#scopes_full_names => Ok(#enum_ident::#scopes_ident),)*
-                    _ => Err(()),
+                    _ => Err(::scopes_rs::error::ScopeParseError(s.to_string())),
                 }
             }
         }
