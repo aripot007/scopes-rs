@@ -65,9 +65,20 @@ contains some other examples of how to use this library.
 
 The docs also provide more code snippets and examples.
 
-# License
+## License
 
-This project is dual-licensed under the [Apache 2.0 License](https://github.com/aripot007/scopes-rs/blob/master/LICENSE-APACHE) and the [MIT License](https://github.com/aripot007/scopes-rs/blob/master/LICENSE-MIT).
-You can choose between either of these if you want to use this work.
+Licensed under either of
 
-`SPDX-License-Identifier: Apache-2.0 OR MIT`
+ * Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+ * MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+
+at your option.
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
+
