@@ -1,8 +1,11 @@
 [package]
 name = "scopes-macros"
+description = "Macros for scopes-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+license.authors = true
+repository.workspace = true
 
 [lib]
 proc-macro = true

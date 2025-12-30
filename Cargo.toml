@@ -8,12 +8,18 @@ resolver = "2"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
+authors = ["aripot007"]
+repository = "https://github.com/aripot007/scopes-rs"
 
 [package]
 name = "scopes-rs"
-version = "0.1.0"
-edition = "2024"
-license = "MIT OR Apache-2.0"
+description = "strongly typed scoped authorization library"
+keywords = ["scope", "authorization"]
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
 
 [features]
 
