@@ -2,9 +2,9 @@
 
 `scopes-rs` is a strongly typed scoped authorization library.
 
-![GitHub Release](https://img.shields.io/github/v/release/aripot007/scopes-rs)
-![Crates.io Version](https://img.shields.io/crates/v/scopes-rs) 
-![docs.rs](https://img.shields.io/docsrs/scopes-rs)
+[![GitHub Release](https://img.shields.io/github/v/release/aripot007/scopes-rs)](https://github.com/aripot007/scopes-rs/releases/latest)
+[![Crates.io Version](https://img.shields.io/crates/v/scopes-rs)](https://crates.io/crates/scopes-rs)
+[![docs.rs](https://img.shields.io/docsrs/scopes-rs)](https://docs.rs/scopes-rs/latest/scopes_rs/)
 
 
 # Features
