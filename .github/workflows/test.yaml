@@ -1,0 +1,49 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: taiki-e/checkout-action@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-nextest and cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov
+
+      - name: Clean code coverage artifacts
+        run: cargo llvm-cov clean --workspace
+
+      - name: Perform tests with defaut features
+        run:  cargo llvm-cov nextest --workspace --no-report
+
+      - name: Perform tests with herarchy feature
+        run:  cargo llvm-cov nextest --workspace --no-report --features hierarchy
+
+      - name: Doctests
+        run: cargo test --workspace --doc
+
+      - name: Doctests with hierarchy feature
+        run: cargo test --workspace --doc --features hierarchy
+      
+      - name: Generate coverage report
+        run: cargo llvm-cov report --lcov --output-path lcov.info
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true
