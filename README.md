@@ -5,7 +5,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/aripot007/scopes-rs)](https://github.com/aripot007/scopes-rs/releases/latest)
 [![Crates.io Version](https://img.shields.io/crates/v/scopes-rs)](https://crates.io/crates/scopes-rs)
 [![docs.rs](https://img.shields.io/docsrs/scopes-rs)](https://docs.rs/scopes-rs/latest/scopes_rs/)
-
+[![codecov](https://codecov.io/github/aripot007/scopes-rs/graph/badge.svg?token=HE0TZTEACN)](https://codecov.io/github/aripot007/scopes-rs)
 
 # Features
 
