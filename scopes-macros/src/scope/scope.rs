@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use syn::Ident;
 
-use crate::{ScopeOpts, ScopeVariantOpts};
+use crate::scope::opts::{ScopeOpts, ScopeVariantOpts};
 
 // TODO: Implementation without cloning separator and prefix if feasible
 #[cfg_attr(test,derive(Debug))]
@@ -133,10 +133,10 @@ mod tests {
     use darling::ast;
     use proc_macro2::Span;
 
-    use crate::{Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
+    use crate::scope::{Scope, opts::{ScopeOpts, ScopeVariantOpts}, scope::get_labels_from_ident};
 
     #[cfg(feature = "hierarchy")]
-    use crate::IncludeList;
+    use crate::scope::opts::IncludeList;
 
     // Implement utility functions to create new scopes in tests
     impl Scope {
