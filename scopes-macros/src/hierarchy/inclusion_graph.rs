@@ -135,6 +135,8 @@ impl<'a> Iterator for DfsIterator<'a> {
             None => return None,
         };
 
+        self.visited.insert(current);
+
         // Add neighbors
         let neighbors = self.graph.neighbors.get(current).map(HashSet::iter).unwrap_or_default();
         for neighbor in neighbors {
