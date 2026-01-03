@@ -25,6 +25,10 @@ pub struct Scope {
 
     // Name prefix
     prefix: String,
+
+    // List of additional scopes to include
+    #[cfg(feature = "hierarchy")]
+    include: Vec<syn::Ident>,
 }
 
 // Extract a list of labels from an enum variant ident.
@@ -52,7 +56,7 @@ fn get_labels_from_ident(ident: &Ident) -> Vec<String> {
 impl Scope {
 
     pub fn from_variant(variant_opts: &ScopeVariantOpts, opts: &ScopeOpts) -> Self {
-
+        
         let labels = match &variant_opts.rename {
 
             // If hierarchy is not enabled, we don't need to extract the labels from the name
@@ -81,6 +85,9 @@ impl Scope {
             
             #[cfg(feature = "hierarchy")]
             labels,
+
+            #[cfg(feature = "hierarchy")]
+            include: variant_opts.include.as_ref().map(|i| i.0.clone()).unwrap_or(Vec::new()),
             
             #[cfg(not(feature = "hierarchy"))]
             scope_name: labels.join(&opts.separator),
@@ -113,7 +120,7 @@ mod tests {
     use darling::ast;
     use proc_macro2::Span;
 
-    use crate::{Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
+    use crate::{IncludeList, Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
 
     // Implement utility functions to create new scopes in tests
     impl Scope {
@@ -124,6 +131,7 @@ mod tests {
                 labels: labels.map(|s| String::from(s.as_ref())).collect(),
                 separator: separator.as_ref().to_owned(),
                 prefix: prefix.as_ref().to_owned(),
+                include: Vec::new(),
             }
         }
 
@@ -138,7 +146,7 @@ mod tests {
 
         // Create a scope struct corresponding to the enabled features
         #[allow(unused_variables)]
-        pub fn _test_new_full(ident: syn::Ident, name: impl AsRef<str>, labels: impl IntoIterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>) -> Self {
+        pub fn _test_new_full(ident: syn::Ident, name: impl AsRef<str>, labels: impl IntoIterator<Item = impl AsRef<str>>, separator: impl AsRef<str>, prefix: impl AsRef<str>, include: Vec<syn::Ident>) -> Self {
             Self {
                 ident,
                 prefix: prefix.as_ref().to_owned(),
@@ -150,6 +158,9 @@ mod tests {
                 labels: labels.into_iter().map(|s| String::from(s.as_ref())).collect(),
                 #[cfg(feature = "hierarchy")]
                 separator: separator.as_ref().to_owned(),
+
+                #[cfg(feature = "hierarchy")]
+                include,
             }
         }
     }
@@ -198,20 +209,22 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(Foo),
             rename: None,
+            include: None,
         };
         assert_eq!(
             Scope::from_variant(&variant_opts, &opts),
-            Scope::_test_new_full(ident!(Foo), "foo", get_labels_from_ident(&ident!(Foo)).iter(), &opts.separator, &opts.prefix)
+            Scope::_test_new_full(ident!(Foo), "foo", get_labels_from_ident(&ident!(Foo)).iter(), &opts.separator, &opts.prefix, vec![])
         );
 
 
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: None,
+            include: None,
         };
         assert_eq!(
             Scope::from_variant(&variant_opts, &opts),
-            Scope::_test_new_full(ident!(FooBar), "foo.bar", get_labels_from_ident(&ident!(FooBar)).iter(), &opts.separator, &opts.prefix)
+            Scope::_test_new_full(ident!(FooBar), "foo.bar", get_labels_from_ident(&ident!(FooBar)).iter(), &opts.separator, &opts.prefix, vec![])
         );
     }
 
@@ -222,19 +235,21 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: Some("baz".to_string()),
+            include: Some(IncludeList(Vec::new())),
         };
         assert_eq!(
             Scope::from_variant(&variant_opts, &opts),
-            Scope::_test_new_full(ident!(FooBar), "baz", vec!["baz"], &opts.separator, &opts.prefix)
+            Scope::_test_new_full(ident!(FooBar), "baz", vec!["baz"], &opts.separator, &opts.prefix, vec![])
         );
 
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: Some("baz.bar".to_string()),
+            include: Some(IncludeList(Vec::new())),
         };
         assert_eq!(
             Scope::from_variant(&variant_opts, &opts),
-            Scope::_test_new_full(ident!(FooBar), "baz.bar", vec!["baz", "bar"], &opts.separator, &opts.prefix)
+            Scope::_test_new_full(ident!(FooBar), "baz.bar", vec!["baz", "bar"], &opts.separator, &opts.prefix, vec![])
         );
     }
 
@@ -243,10 +258,10 @@ mod tests {
         let mut opts = default_opts();
         opts.prefix = "myprefix/".to_string();
 
-        let foo = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: None}, &opts);
-        let foo_bar_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(FooBarBaz), rename: None}, &opts);
-        let renamed = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed".to_string())}, &opts);
-        let renamed_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed.baz".to_string())}, &opts);
+        let foo = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: None, include: None,}, &opts);
+        let foo_bar_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(FooBarBaz), rename: None, include: None,}, &opts);
+        let renamed = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed".to_string()), include: None,}, &opts);
+        let renamed_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed.baz".to_string()), include: None,}, &opts);
 
         assert_eq!("foo", foo.name());
         assert_eq!("foo.bar.baz", foo_bar_baz.name());

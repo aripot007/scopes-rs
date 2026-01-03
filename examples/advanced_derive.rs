@@ -30,7 +30,7 @@ enum ApiScope {
     #[allow(non_camel_case_types)]
     Scope_withWeirdCase,  
 
-    #[scope(rename = "myscope")]
+    #[scope(rename = "myscope", include = MyCustomScope)]
     MyCustomScope,
 
     #[scope(rename = "myscope:readonly")]  // With the hierarchy feature, this will be included in MyCustomScope
