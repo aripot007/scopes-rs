@@ -6,7 +6,7 @@ use scopes_macros::Scope;
 use scopes_rs::hierarchy::Hierarchized;
 
 #[derive(Debug, PartialEq, Scope)]
-#[scope(prefix = "myprefix/", separator = "_")]
+#[scope(prefix = "myprefix/", separator = "_", scope_name_getter = true)]
 enum MyScope {
     Foo,
     FooBar,
@@ -36,6 +36,15 @@ fn test_parsing() {
     assert!(MyScope::from_str("rename_separated").is_err());
     assert!(MyScope::from_str("myprefix/rename_separated").is_err());
 
+}
+
+#[test]
+fn test_scope_name() {
+    assert_eq!("myprefix/foo", MyScope::Foo.scope_name());
+    assert_eq!("myprefix/foo_bar", MyScope::FooBar.scope_name());
+    assert_eq!("myprefix/bar", MyScope::Bar.scope_name());
+    assert_eq!("myprefix/barstool", MyScope::BarStool.scope_name());
+    assert_eq!("myprefix/foo_baz", MyScope::RenameSeparated.scope_name());
 }
 
 #[test]
