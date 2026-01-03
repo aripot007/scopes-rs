@@ -60,6 +60,18 @@ struct ScopeVariantOpts {
     include: Option<IncludeList>,
 }
 
+#[cfg(test)]
+impl Default for ScopeVariantOpts {
+    fn default() -> Self {
+        Self { 
+            ident: syn::parse_quote!(Foo), 
+            rename: Default::default(),
+            #[cfg(feature = "hierarchy")]
+            include: Default::default()
+        }
+    }
+}
+
 #[cfg(feature = "hierarchy")]
 #[derive(Debug)]
 struct IncludeList(pub Vec<syn::Ident>);

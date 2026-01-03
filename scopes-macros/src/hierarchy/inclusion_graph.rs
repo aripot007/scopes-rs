@@ -21,6 +21,15 @@ impl<'a> InclusionGraph<'a> {
         }
     }
 
+    // Create an inclusion graph from a list of scopes
+    pub fn from_scopes(scopes: impl Iterator<Item = &'a Scope>) -> Self {
+        let mut g = Self::new();
+        for scope in scopes {
+            g.add(scope);
+        }
+        g
+    }
+
     // Add a scope to the inclusion graph
     pub fn add(&mut self, scope: &'a Scope) {
         

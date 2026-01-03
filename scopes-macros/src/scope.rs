@@ -133,7 +133,10 @@ mod tests {
     use darling::ast;
     use proc_macro2::Span;
 
-    use crate::{IncludeList, Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
+    use crate::{Scope, ScopeOpts, ScopeVariantOpts, scope::get_labels_from_ident};
+
+    #[cfg(feature = "hierarchy")]
+    use crate::IncludeList;
 
     // Implement utility functions to create new scopes in tests
     impl Scope {
@@ -222,6 +225,7 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(Foo),
             rename: None,
+            #[cfg(feature = "hierarchy")]
             include: None,
         };
         assert_eq!(
@@ -233,6 +237,7 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: None,
+            #[cfg(feature = "hierarchy")]
             include: None,
         };
         assert_eq!(
@@ -248,6 +253,7 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: Some("baz".to_string()),
+            #[cfg(feature = "hierarchy")]
             include: Some(IncludeList(Vec::new())),
         };
         assert_eq!(
@@ -258,6 +264,7 @@ mod tests {
         let variant_opts = ScopeVariantOpts {
             ident: ident!(FooBar),
             rename: Some("baz.bar".to_string()),
+            #[cfg(feature = "hierarchy")]
             include: Some(IncludeList(Vec::new())),
         };
         assert_eq!(
@@ -271,10 +278,10 @@ mod tests {
         let mut opts = default_opts();
         opts.prefix = "myprefix/".to_string();
 
-        let foo = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: None, include: None,}, &opts);
-        let foo_bar_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(FooBarBaz), rename: None, include: None,}, &opts);
-        let renamed = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed".to_string()), include: None,}, &opts);
-        let renamed_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed.baz".to_string()), include: None,}, &opts);
+        let foo = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), ..Default::default()}, &opts);
+        let foo_bar_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(FooBarBaz), ..Default::default()}, &opts);
+        let renamed = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed".to_string()), ..Default::default()}, &opts);
+        let renamed_baz = Scope::from_variant(&ScopeVariantOpts {ident: ident!(Foo), rename: Some("renamed.baz".to_string()), ..Default::default()}, &opts);
 
         assert_eq!("foo", foo.name());
         assert_eq!("foo.bar.baz", foo_bar_baz.name());
