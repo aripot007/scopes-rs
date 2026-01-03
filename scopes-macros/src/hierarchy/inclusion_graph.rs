@@ -67,7 +67,6 @@ impl<'a> InclusionGraph<'a> {
         for other in &scope.include {
             self.add_inclusion(&scope.ident, &other);
         }
-
         // Add the scope to the resolved nodes if it wasn't resolved already
         self.resolved_nodes.insert(scope.ident.clone(), scope);
     }
@@ -130,10 +129,14 @@ impl<'a> Iterator for DfsIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         
-        let current = match self.to_visit.pop_if(|i| !self.visited.contains(i)) {
+        let current = match self.to_visit.pop() {
             Some(ident) => ident,
             None => return None,
         };
+
+        if self.visited.contains(current) {
+            return self.next();
+        }
 
         self.visited.insert(current);
 

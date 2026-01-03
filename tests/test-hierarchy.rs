@@ -43,5 +43,8 @@ fn test_label_include() {
     assert!(MyScope::Foo.includes(&MyScope::FooBar));
     assert!(MyScope::Foo.includes(&MyScope::FooReadonly));
     assert!(MyScope::Foo.includes(&MyScope::FooBarReadonly));
+
+    assert!(MyScope::Bar.includes(&MyScope::BarReadonly));
+    assert!(!MyScope::Bar.includes(&MyScope::FooBar));
 }
 
