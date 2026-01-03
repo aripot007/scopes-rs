@@ -75,7 +75,46 @@ struct IncludeList(pub Vec<syn::Ident>);
 /// ## Optional `#[scope(...)]` attributes for enum variants
 /// 
 /// - `rename = "..."`: Use a specific name instead of inferring it from the variant name
+/// - `include = scope | [scope1, ...]`: Include other scopes in the hierarchy. See below for more details.
+///     requires the `hierarchy` feature
 /// 
+/// ### Hierarchy customization
+/// 
+/// The generated scopes hierarchy can be customized with the `#[scope(include = ...)]` attribute.
+/// 
+/// The attributes takes a scope variant or a list of scope variants that should be included in the scope :
+/// 
+/// 
+/// ```ignore
+/// use scopes_rs::{
+///     derive::Scope,
+///     hierarchy::Hierarchized,
+/// };
+/// 
+/// #[derive(Clone, Debug, PartialEq, Scope)]
+/// enum MyScope {
+/// 
+///     Foo,
+///     #[scope(include = FooBarReadonly)]
+///     FooReadonly,
+/// 
+///     FooBar,
+///     FooBarReadonly,
+///     
+///     #[scope(include = [FooReadonly, BarReadonly])]
+///     Readonly,
+///     
+///     Bar,
+///     BarReadonly,
+/// }
+/// 
+/// assert!(MyScope::Readonly.includes(&MyScope::BarReadonly));
+/// assert!(MyScope::Readonly.includes(&MyScope::FooReadonly));
+/// 
+/// // Inclusion is transitive, so Readonly also includes FooBarReadonly 
+/// // since FooReadonly includes it
+/// assert!(MyScope::Readonly.includes(&MyScope::FooBarReadonly))
+/// ```
 #[proc_macro_derive(Scope, attributes(scope))]
 pub fn derive_into_scope(item: TokenStream) -> TokenStream {
     
