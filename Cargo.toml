@@ -34,3 +34,6 @@ hierarchy = ["scopes-macros/hierarchy"]
 
 [dependencies]
 scopes-macros = { version = "0.1.0", path = "./scopes-macros" }
+
+[dev-dependencies]
+strum = { version = "0.27.2", features = ["derive"] }
