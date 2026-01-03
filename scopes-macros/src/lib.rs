@@ -157,7 +157,7 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
 
         scope_name_impl = quote! {
             impl #enum_ident {
-                #vis fn scope_name(&self) -> &'static str {
+                #vis const fn scope_name(&self) -> &'static str {
                     match self {
                         #(#enum_ident::#scopes_ident => #scopes_full_names,)*
                     }
