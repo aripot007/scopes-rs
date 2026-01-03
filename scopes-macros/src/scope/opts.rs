@@ -124,3 +124,76 @@ fn parse_included_scope(expr: &syn::Expr) -> Result<syn::Ident, darling::Error> 
     Ok(variant_name.ident.clone())
 }
 
+#[cfg(test)]
+mod tests {
+    #[cfg(feature = "hierarchy")]
+    use darling::FromMeta;
+    #[cfg(feature = "hierarchy")]
+    use syn::parse_quote;
+
+    #[cfg(feature = "hierarchy")]
+    use crate::scope::opts::{parse_included_scope, IncludeList};
+
+    #[cfg(feature = "hierarchy")]
+    macro_rules! ident {
+        ($i: ident) => {
+            {let ident: syn::Ident = parse_quote!($i); ident}
+        };
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_included_scope_variant_only() {
+        let expr: syn::Expr = parse_quote! {Foo};
+
+        let expected: syn::Ident = parse_quote!(Foo);
+
+        assert_eq!(parse_included_scope(&expr).unwrap(), expected);
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_included_scope_variant_full() {
+        let expr: syn::Expr = parse_quote! {MyScope::Foo};
+
+        let expected: syn::Ident = parse_quote!(Foo);
+
+        assert_eq!(parse_included_scope(&expr).unwrap(), expected);
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_included_scope_path_too_long() {
+        let expr: syn::Expr = parse_quote! {crate::MyScope::Foo};
+
+        assert!(parse_included_scope(&expr).is_err());
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_included_scope_invalid_type() {
+
+        assert!(parse_included_scope(&parse_quote! {"foo"}).is_err());
+        assert!(parse_included_scope(&parse_quote! {[Foo,]}).is_err());
+        assert!(parse_included_scope(&parse_quote! {(Foo,)}).is_err());
+
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_include_single_scope() {
+        assert_eq!(IncludeList::from_expr(&parse_quote! {MyScope::Foo}).unwrap().0, vec![ident!(Foo)]);
+        assert_eq!(IncludeList::from_expr(&parse_quote! {Bar}).unwrap().0, vec![ident!(Bar)]);
+    }
+
+    #[cfg(feature = "hierarchy")]
+    #[test]
+    fn test_parse_include_multiple_scopes() {
+        
+        let parsed_array = IncludeList::from_expr(&parse_quote! {[Foo, MyScope::Bar, Baz]}).unwrap().0;
+        let parsed_tuple = IncludeList::from_expr(&parse_quote! {(Foo, MyScope::Bar, Baz)}).unwrap().0;
+
+        assert_eq!(parsed_array, vec![ident!(Foo), ident!(Bar), ident!(Baz)]);
+        assert_eq!(parsed_array, parsed_tuple);
+    }
+}
