@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `scope_name_getter` parameter on the derive macro to generate the `scope_name()` function
+
 ## [0.1.0] - 2024-12-30
 
 ### Added

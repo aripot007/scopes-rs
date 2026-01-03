@@ -19,6 +19,9 @@ use scopes_rs::hierarchy::Hierarchized;
 
     // With the `hierarchy` feature, you can set this to false to implement the Hierarchized trait yourself
     // hierarchy = false,
+
+    // Enable the generation of the `scope_name()` function
+    scope_name_getter = true,
 )]
 enum ApiScope {
     MultiLevelScope,
@@ -40,6 +43,11 @@ pub fn main() {
     assert_eq!(ApiScope::from_str("myprefix/scope_with:weird:case").unwrap(), ApiScope::Scope_withWeirdCase);
     assert_eq!(ApiScope::from_str("myprefix/myscope").unwrap(), ApiScope::MyCustomScope);
     assert_eq!(ApiScope::from_str("myprefix/myscope:readonly").unwrap(), ApiScope::MyCustomScopeReadonly);
+
+    assert_eq!("myprefix/multi:level:scope", ApiScope::MultiLevelScope.scope_name());
+    assert_eq!("myprefix/scope_with:weird:case", ApiScope::Scope_withWeirdCase.scope_name());
+    assert_eq!("myprefix/myscope", ApiScope::MyCustomScope.scope_name());
+    assert_eq!("myprefix/myscope:readonly", ApiScope::MyCustomScopeReadonly.scope_name());
 
     #[cfg(feature = "hierarchy")]
     assert!(ApiScope::MyCustomScope.includes(&ApiScope::MyCustomScopeReadonly))

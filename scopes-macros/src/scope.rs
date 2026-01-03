@@ -164,11 +164,14 @@ mod tests {
     fn default_opts() -> ScopeOpts {
         ScopeOpts {
             ident: ident!(ScopeEnum),
+            vis: syn::Visibility::Inherited,
             separator: ".".to_string(),
             prefix: "".to_string(),
-
+            
             #[cfg(feature = "hierarchy")]
             hierarchy: false,
+
+            scope_name_getter: true,
 
             data: ast::Data::Enum(Vec::new()),
         }

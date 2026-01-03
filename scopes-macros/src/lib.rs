@@ -25,6 +25,7 @@ mod scope;
 #[darling(attributes(scope), supports(enum_unit))]
 struct ScopeOpts {
     ident: syn::Ident,
+    vis: syn::Visibility,
 
     #[darling(default = || ".".to_string())]
     separator: String,
@@ -35,6 +36,10 @@ struct ScopeOpts {
     #[cfg(feature = "hierarchy")]
     #[darling(default = || true)]
     hierarchy: bool,
+
+    // Add a function to get the scope name
+    #[darling(default = || false)]
+    scope_name_getter: bool,
 
     data: ast::Data<ScopeVariantOpts, ()>,
 }
@@ -54,6 +59,7 @@ struct ScopeVariantOpts {
 /// - `prefix = "..."`: Add a prefix to every generated scope name. Default is an empty prefix
 /// - `hierarchy = bool`: Enable or disable generation of the `Hierarchized` trait. Requires the `hierarchy`
 ///     feature. Defaults to `true`.
+/// - `scope_name_getter = bool`: Implement the `scope_name()` function to get the scope name from a variant (defaults to true)
 /// 
 /// ## Optional `#[scope(...)]` attributes for enum variants
 /// 
@@ -143,12 +149,32 @@ fn derive_into_scope_impl(opts: &ScopeOpts) -> TokenStream {
         }
     };
 
+    // Implement scope_name() function
+    let scope_name_impl;
+    if opts.scope_name_getter {
+
+        let vis = &opts.vis;
+
+        scope_name_impl = quote! {
+            impl #enum_ident {
+                #vis fn scope_name(&self) -> &'static str {
+                    match self {
+                        #(#enum_ident::#scopes_ident => #scopes_full_names,)*
+                    }
+                }
+            }
+        }
+    } else {
+        scope_name_impl = quote! {}
+    }
+
     let scope_impl = quote! {
         impl ::scopes_rs::scope::Scope for #enum_ident {}
     };
 
     let scope_impl = quote! {
         #fromstr_impl
+        #scope_name_impl
         #scope_impl
     };
 
