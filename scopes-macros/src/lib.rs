@@ -8,13 +8,16 @@ extern crate proc_macro2;
 
 use std::{collections::HashMap, fmt::Debug};
 
-use darling::{FromDeriveInput, FromMeta, FromVariant, ast};
+use darling::{FromDeriveInput, FromVariant, ast};
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use syn::{ExprArray, ExprTuple};
+
+#[cfg(feature = "hierarchy")]
+use darling::FromMeta;
 
 use crate::scope::Scope;
+
 
 #[cfg(feature = "hierarchy")]
 mod hierarchy;
@@ -222,8 +225,8 @@ impl FromMeta for IncludeList {
             syn::Expr::Path(_) => Ok(IncludeList(vec![parse_included_scope(expr)?])),
 
             // List of included scopes
-            syn::Expr::Array(ExprArray { ref elems, ..})
-            | syn::Expr::Tuple(ExprTuple { ref elems, .. }) => {
+            syn::Expr::Array(syn::ExprArray { ref elems, ..})
+            | syn::Expr::Tuple(syn::ExprTuple { ref elems, .. }) => {
                 
                 // Parse each expression in the list
                 let parsed_elems: Vec<syn::Ident> = elems.iter()

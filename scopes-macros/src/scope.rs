@@ -1,9 +1,10 @@
+use std::hash::Hash;
+
 use syn::Ident;
 
 use crate::{ScopeOpts, ScopeVariantOpts};
 
 // TODO: Implementation without cloning separator and prefix if feasible
-#[derive(PartialEq)]
 #[cfg_attr(test,derive(Debug))]
 pub struct Scope {
 
@@ -28,7 +29,19 @@ pub struct Scope {
 
     // List of additional scopes to include
     #[cfg(feature = "hierarchy")]
-    include: Vec<syn::Ident>,
+    pub include: Vec<syn::Ident>,
+}
+
+impl PartialEq for Scope {
+    fn eq(&self, other: &Self) -> bool {
+        self.ident == other.ident
+    }
+}
+
+impl Hash for Scope {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.ident.hash(state);
+    }
 }
 
 // Extract a list of labels from an enum variant ident.
